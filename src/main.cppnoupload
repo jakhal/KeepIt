@@ -1,0 +1,73 @@
+#include <Arduino.h>
+
+#define MODEM_TX             27
+#define MODEM_RX             26
+
+ 
+
+// Set serial for AT commands (to SIM800 module)
+#define SerialAT  Serial1
+
+void updateSerial()
+{
+  delay(500);
+  while (Serial.available()) 
+  {
+    SerialAT.write(Serial.read());//Forward what Serial received to Software Serial Port
+  }
+  while(SerialAT.available()) 
+  {
+    Serial.write(SerialAT.read());//Forward what Software Serial received to Serial Port
+  }
+} 
+
+void setup()
+{
+  //Begin serial communication with Arduino and Arduino IDE (Serial Monitor)
+  Serial.begin(115200);
+  
+  //Begin serial communication with Arduino and SIM800L
+  SerialAT.begin(115200, SERIAL_8N1, MODEM_RX, MODEM_TX);
+
+ 
+
+  Serial.println("Initializing...");
+  delay(1000);
+
+ 
+
+  SerialAT.println("AT"); //Once the handshake test is successful, it will back to OK
+  updateSerial();
+  SerialAT.println("AT+CSQ"); //Signal quality test, value range is 0-31 , 31 is the best
+  updateSerial();
+  SerialAT.println("AT+CCID"); //Read SIM information to confirm whether the SIM is plugged
+  updateSerial();
+  SerialAT.println("AT+CPIN=0707"); //Read SIM information to confirm whether the SIM is plugged
+  updateSerial();
+  SerialAT.println("AT+CREG?"); //Check whether it has registered in the network
+  updateSerial();
+  SerialAT.println("AT+COPS?"); // check registry
+  updateSerial();
+  
+  SerialAT.println("AT+CMGF=1"); // text mode
+  updateSerial();
+  delay(5000);
+  SerialAT.println("AT+CMGS=\"+4915902476389\"");
+  updateSerial();
+  SerialAT.print("Ich wurde geklaut - dein altes Fahrrad :(");
+  updateSerial();
+  SerialAT.write(26);
+}
+
+ 
+
+
+
+ 
+
+
+
+void loop()
+{
+  updateSerial();
+}
